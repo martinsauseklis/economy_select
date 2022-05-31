@@ -1,0 +1,1673 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+
+<head>
+    <link href="./css/StyleSheet.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" language="Javascript1.1"></script> 
+    <script language="javascript1.3" src="js/calendar1.js"></script>
+    <script language="javascript1.3" src="js/common.js"></script>
+    <script language="javascript1.3" src="js/share.js"></script>
+	<script language="javascript1.3" src="js/trapModK.js"></script>
+</head>
+<SCRIPT LANGUAGE="JavaScript">
+
+<!--
+
+var keyList = new Array(9);
+keyList.push(8); //Keycode corresponding to 'H'
+keyList.push(11); //Keycode corresponding to 'K'
+keyList.push(18); //Keycode corresponding to 'R'
+keyList.push(12); //Keycode corresponding to 'L'
+keyList.push(6); //Keycode corresponding to 'F'
+keyList.push(7); //Keycode corresponding to 'G'
+keyList.push(14); //Keycode corresponding to 'N'
+keyList.push(5); //Keycode corresponding to 'E'
+keyList.push(17); //Keycode corresponding to 'Q'
+	
+var childWindow = null;
+
+function rightTrim(str)
+{
+   var len = str.length;
+    var cnt = len-1;
+  	while(str.charAt(cnt) == " ")
+  	{
+    	cnt = cnt - 1;
+    	if (cnt <=0)
+      		break;
+  	}
+  	str = str.slice(0,cnt+1);
+  	return str;
+}
+
+
+function leftTrim(str)
+{
+	var len = str.length;
+	var cnt = 0;
+  	while(str.charAt(cnt) == " ")
+  	{
+    	cnt = cnt + 1;
+    	if (cnt >=len)
+      	break;
+  	}
+  	str = str.slice(cnt,len);
+	return str;
+}
+
+
+function trimStringValue(str)
+{
+  	return rightTrim(leftTrim(str));
+}
+
+function fnSubmit()
+{ 
+	document.forms[0].doValidation.value="True";
+    submitForm();
+}
+
+	function fnClear()
+	{
+	document.forms[0].mvmt_no.value="";
+	document.forms[0].dept_date.value="";
+	document.forms[0].org_loc.value="";
+	document.forms[0].dest_loc.value="";
+	document.forms[0].mawb_no.value="";
+	document.forms[0].orig_cntry_rest.value="";
+	document.forms[0].dest_cntry_rest.value=""; // Added for MS2.3 11Feb2011
+	document.forms[0].dest_ctryloc.value="";
+	document.forms[0].glob_prod_code.value="";
+	document.forms[0].service_code.value=""; // added for MS2.6.4 21APR2016 Law
+	document.forms[0].intl.checked=false;
+	document.forms[0].trans.checked=false;
+	document.forms[0].domestic.checked=false;
+	document.forms[0].report_tmplt.value="";
+	document.forms[0].currency.value="";
+	//Added for MS2.4
+	document.forms[0].dest_cntry_rest.value="";
+	document.forms[0].shipmentcurrency.value="";
+	document.forms[0].localcurrency.value="";
+	//End Added
+	}
+	
+	function fnReset()
+	{
+		var url = "./MSQuery.do";
+		document.forms[0].action=url + "?method=defaultQueryValues";
+		document.forms[0].submit();
+	}
+
+//validation for number 
+function isNumeric(value) {
+	if (value != null && !value.toString().match(/^[-]?\d*\.?\d*$/)) return false;
+		  return true;
+}	
+function submitForm() {
+				var date =fnGetDate();
+				date = date.substring(8);
+				for(var loop=0;loop<date.length;loop++)
+    {
+       if(date.charAt(loop)==' ')
+        {
+               date=(date.substring(0,loop).concat("%20")).
+               concat(date.substring(loop+1) );
+        }
+    }
+				//VALIDATE SHIPMENT DECLARE VALUE
+				//check condition of enter both values of shipment range and currency
+				var shipment_value  = document.forms[0].shipmentcurrency.value;
+				var shipment_curr   = document.forms[0].localcurrency.value;
+				var shipment =true;
+				var shipmentval = true;
+				var spacecheck = true;
+				var myString = shipment_value;
+				var Stringvalgrthn = myString.split(">=");
+				var Stringvallesthn = myString.split("<=");
+				var Stringvalless = myString.split("<");
+				var Stringvalgrt = myString.split(">");
+				var Stringvaleql = myString.split("=");
+				if (document.forms[0].localcurrency.value!=0 || document.forms[0].shipmentcurrency.value!="" ){
+						if (document.forms[0].localcurrency.value==0 && document.forms[0].shipmentcurrency.value!='' ){
+							document.getElementById('select_either_err').style.display="block";
+							shipmentval=false;
+							scroll(0,0);
+							
+						}
+						else if (document.forms[0].shipmentcurrency.value=='' && document.forms[0].localcurrency.value!='')
+						{
+							document.getElementById('select_either_err').style.display="block";
+							shipmentval=false;
+							scroll(0,0);
+						}
+						else 
+						{
+							document.getElementById('select_either_err').style.display="none";
+							shipmentval=true;
+						}
+				}
+				//check condition for each operators Exm : >=,<=,>,< and =
+				
+				if (shipment_value!= ''){
+				
+				
+			
+					if (myString.match(">="))
+					{
+						if (!isNumeric(Stringvalgrthn[0]) || !isNumeric(Stringvalgrthn[1]))
+						{
+							
+							document.getElementById('shipment_value_number_err').style.display="block";
+							document.getElementById('shipment_range').style.display="none"
+							document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+							document.getElementById('shipment_equal_err').style.display="none";
+							document.getElementById('shipment_greaterthan_err').style.display="none";
+							document.getElementById('shipment_lessthan_err').style.display="none";
+							document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+							shipment=false;
+							scroll(0,0);
+						}
+						else 
+						{
+							document.getElementById('shipment_value_number_err').style.display="none";
+							if (Stringvalgrthn[0]!="" && Stringvalgrthn[1]==""){
+								
+								document.getElementById('shipment_range').style.display="block"
+								document.getElementById('shipment_value_number_err').style.display="none";
+								document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+								document.getElementById('shipment_equal_err').style.display="none";
+								document.getElementById('shipment_greaterthan_err').style.display="none";
+								document.getElementById('shipment_lessthan_err').style.display="none";
+								document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+								shipment=false;
+								scroll(0,0);
+							}
+							else {
+								document.getElementById('shipment_range').style.display="none";
+								
+								if (Stringvalgrthn[0]!=""){
+									if (parseInt(Stringvalgrthn[0])>=parseInt(Stringvalgrthn[1]) ){
+										
+			        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+			        					document.getElementById('shipment_value_number_err').style.display="none";
+			        					document.getElementById('shipment_equal_err').style.display="none";
+			        					document.getElementById('shipment_range').style.display="none";
+			        					document.getElementById('shipment_greaterthan_err').style.display="none";
+			        					document.getElementById('shipment_lessthan_err').style.display="none";
+			        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+			        					shipment=true;
+			        				}
+			        				else
+			        					{
+			        					
+			        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="block";
+			        					document.getElementById('shipment_value_number_err').style.display="none";
+			        					document.getElementById('shipment_equal_err').style.display="none";
+			        					document.getElementById('shipment_range').style.display="none";
+			        					document.getElementById('shipment_greaterthan_err').style.display="none";
+			        					document.getElementById('shipment_lessthan_err').style.display="none";
+			        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+			        					shipment=false;
+			        					scroll(0,0);
+			        					
+			        					}
+									}
+								else {
+									document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+									document.getElementById('shipment_value_number_err').style.display="none";
+									document.getElementById('shipment_equal_err').style.display="none";
+									document.getElementById('shipment_range').style.display="none";
+									document.getElementById('shipment_greaterthan_err').style.display="none";
+									document.getElementById('shipment_lessthan_err').style.display="none";
+									document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+									shipment=true;
+									
+								}
+							}
+						}
+					}
+					else if (myString.match("<="))
+					{
+						if (!isNumeric(Stringvallesthn[0])||!isNumeric(Stringvallesthn[1])){
+							
+							document.getElementById('shipment_value_number_err').style.display="block";
+							document.getElementById('shipment_range').style.display="none";
+							document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+							document.getElementById('shipment_equal_err').style.display="none";
+							document.getElementById('shipment_greaterthan_err').style.display="none";
+							document.getElementById('shipment_lessthan_err').style.display="none";
+							document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+							shipment=false;
+							scroll(0,0);
+						}
+						else{
+							document.getElementById('shipment_value_number_err').style.display="none";
+							if (Stringvallesthn[0]!="" && Stringvallesthn[1]==""){
+								
+								document.getElementById('shipment_range').style.display="block";
+								document.getElementById('shipment_value_number_err').style.display="none";
+								document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+								document.getElementById('shipment_equal_err').style.display="none";
+								document.getElementById('shipment_greaterthan_err').style.display="none";
+								document.getElementById('shipment_lessthan_err').style.display="none";
+								document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+								shipment=false;
+		    					scroll(0,0);
+							}
+							else {
+								document.getElementById('shipment_range').style.display="none";
+								if (Stringvallesthn[0]!=''){
+										if (parseInt(Stringvallesthn[0])<=parseInt(Stringvallesthn[1])){
+				        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+				        					document.getElementById('shipment_value_number_err').style.display="none";
+				        					document.getElementById('shipment_equal_err').style.display="none";
+				        					document.getElementById('shipment_range').style.display="none";
+				        					document.getElementById('shipment_greaterthan_err').style.display="none";
+				        					document.getElementById('shipment_lessthan_err').style.display="none";
+				        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+				        					shipment=true;
+				        					
+				        				}
+				        				else
+				        					{
+				        					document.getElementById('shipment_lessthan_or_equal_err').style.display="block";
+				        					document.getElementById('shipment_value_number_err').style.display="none";
+				        					document.getElementById('shipment_equal_err').style.display="none";
+				        					document.getElementById('shipment_range').style.display="none";
+				        					document.getElementById('shipment_greaterthan_err').style.display="none";
+				        					document.getElementById('shipment_lessthan_err').style.display="none";
+				        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+				        					shipment=false;
+				        					scroll(0,0)
+				        					}
+								}
+								else{
+									document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+									document.getElementById('shipment_value_number_err').style.display="none";
+									document.getElementById('shipment_equal_err').style.display="none";
+									document.getElementById('shipment_range').style.display="none";
+									document.getElementById('shipment_greaterthan_err').style.display="none";
+									document.getElementById('shipment_lessthan_err').style.display="none";
+									document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+									shipment=true;
+								}	
+							}
+						}
+					}
+					
+					else if (myString.match("<"))
+					{
+						if (!isNumeric(Stringvalless[0])||!isNumeric(Stringvalless[1])){
+							
+							document.getElementById('shipment_value_number_err').style.display="block";
+							document.getElementById('shipment_range').style.display="none";
+							document.getElementById('shipment_lessthan_err').style.display="none";
+							document.getElementById('shipment_equal_err').style.display="none";
+							document.getElementById('shipment_greaterthan_err').style.display="none";
+							document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+							document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+							shipment=false;
+							scroll(0,0);
+						}
+						else{
+							document.getElementById('shipment_value_number_err').style.display="none";
+							if (Stringvalless[0]!="" && Stringvalless[1]==""){
+							
+								document.getElementById('shipment_range').style.display="block";
+								document.getElementById('shipment_value_number_err').style.display="none";
+								document.getElementById('shipment_lessthan_err').style.display="none";
+								document.getElementById('shipment_equal_err').style.display="none";
+								document.getElementById('shipment_greaterthan_err').style.display="none";
+								document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+								document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+								shipment=false;
+		    					scroll(0,0);
+							}
+							else {
+								document.getElementById('shipment_range').style.display="none";
+								if (Stringvalless[0]!=''){
+									if (parseInt(Stringvalless[0])<parseInt(Stringvalless[1]) ){
+									
+		        						document.getElementById('shipment_lessthan_err').style.display="none";
+		        						document.getElementById('shipment_value_number_err').style.display="none";
+		        						document.getElementById('shipment_equal_err').style.display="none";
+		        						document.getElementById('shipment_range').style.display="none";
+		        						document.getElementById('shipment_greaterthan_err').style.display="none";
+		        						document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+		        						document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+		        						shipment=true;
+		        					}
+									else {
+										document.getElementById('shipment_lessthan_err').style.display="block";	
+			        					document.getElementById('shipment_value_number_err').style.display="none";
+			        					document.getElementById('shipment_equal_err').style.display="none";
+			        					document.getElementById('shipment_range').style.display="none";
+			        					document.getElementById('shipment_greaterthan_err').style.display="none";
+			        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+			        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+			        					shipment=false;
+			        					scroll(0,0);
+			        					
+									}
+								}
+								else{
+									
+		        					document.getElementById('shipment_lessthan_err').style.display="none";	
+		        					document.getElementById('shipment_value_number_err').style.display="none";
+		        					document.getElementById('shipment_equal_err').style.display="none";
+		        					document.getElementById('shipment_range').style.display="none";
+		        					document.getElementById('shipment_greaterthan_err').style.display="none";
+		        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+		        					shipment=true;
+								}
+							}
+						}
+					}
+					
+					else if (myString.match(">"))
+					{
+						if (!isNumeric(Stringvalgrt[0])||!isNumeric(Stringvalgrt[1])){
+							
+							document.getElementById('shipment_value_number_err').style.display="block";
+							document.getElementById('shipment_range').style.display="none";
+							document.getElementById('shipment_greaterthan_err').style.display="none";
+							document.getElementById('shipment_equal_err').style.display="none";
+							document.getElementById('shipment_lessthan_err').style.display="none";
+							document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+							document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+							shipment=false;
+							scroll(0,0);
+						}
+						else{
+							document.getElementById('shipment_value_number_err').style.display="none";
+							if (Stringvalgrt[0]!="" && Stringvalgrt[1]==""){
+								
+								document.getElementById('shipment_range').style.display="block";
+									document.getElementById('shipment_value_number_err').style.display="none";
+									document.getElementById('shipment_greaterthan_err').style.display="none";
+									document.getElementById('shipment_equal_err').style.display="none";
+									document.getElementById('shipment_lessthan_err').style.display="none";
+									document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+									document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+									shipment=false;
+		        					scroll(0,0);
+							}
+							else {
+								document.getElementById('shipment_range').style.display="none";
+							
+								if (Stringvalgrt[0]!=''){	
+									if (parseInt(Stringvalgrt[0])>parseInt(Stringvalgrt[1]) ){
+									
+			        					document.getElementById('shipment_greaterthan_err').style.display="none";
+			        					document.getElementById('shipment_value_number_err').style.display="none";
+			        					document.getElementById('shipment_equal_err').style.display="none";
+			        					document.getElementById('shipment_range').style.display="none";
+			        					document.getElementById('shipment_lessthan_err').style.display="none";
+			        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+			        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+			        					shipment=true;
+			        				}
+									else{
+										document.getElementById('shipment_greaterthan_err').style.display="block";
+										document.getElementById('shipment_value_number_err').style.display="none";
+										document.getElementById('shipment_equal_err').style.display="none";
+										document.getElementById('shipment_range').style.display="none";
+										document.getElementById('shipment_lessthan_err').style.display="none";
+										document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+										document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+										shipment=false;
+			        					scroll(0,0);
+									}
+								}
+								else{
+									document.getElementById('shipment_greaterthan_err').style.display="none";
+									document.getElementById('shipment_value_number_err').style.display="none";
+									document.getElementById('shipment_equal_err').style.display="none";
+									document.getElementById('shipment_range').style.display="none";
+									document.getElementById('shipment_lessthan_err').style.display="none";
+									document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+									document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+									shipment=true;
+								}
+							}
+						}
+					}
+					
+					else if (myString.match("="))
+					{
+						if (!isNumeric(Stringvaleql[0])||!isNumeric(Stringvaleql[1])){
+						
+							document.getElementById('shipment_value_number_err').style.display="block";
+							document.getElementById('shipment_range').style.display="none";
+							document.getElementById('shipment_equal_err').style.display="none";
+							document.getElementById('shipment_greaterthan_err').style.display="none";
+							document.getElementById('shipment_lessthan_err').style.display="none";
+							document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+							document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+							shipment=false;
+							scroll(0,0);
+						}
+						else{
+							document.getElementById('shipment_value_number_err').style.display="none";
+							if (Stringvaleql[0]!="" && Stringvaleql[1]==""){
+							
+								document.getElementById('shipment_range').style.display="block";
+								document.getElementById('shipment_value_number_err').style.display="none";
+								document.getElementById('shipment_equal_err').style.display="none";
+								document.getElementById('shipment_greaterthan_err').style.display="none";
+								document.getElementById('shipment_lessthan_err').style.display="none";
+								document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+								document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+								shipment=false;
+		    					scroll(0,0);
+							}
+							else {
+								document.getElementById('shipment_range').style.display="none";
+								if (Stringvaleql[0]!=''){
+									
+								if ((Stringvaleql[0]==Stringvaleql[1]) ){
+									
+		        					document.getElementById('shipment_equal_err').style.display="none";
+		        					document.getElementById('shipment_value_number_err').style.display="none";
+		        					document.getElementById('shipment_range').style.display="none";
+		        					document.getElementById('shipment_greaterthan_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_err').style.display="none";
+		        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+		        					shipment=true;
+		        					
+		        				}
+		        				else
+		        					{
+		        					document.getElementById('shipment_equal_err').style.display="block";
+		        					document.getElementById('shipment_value_number_err').style.display="none";
+		        					document.getElementById('shipment_range').style.display="none";
+		        					document.getElementById('shipment_greaterthan_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_err').style.display="none";
+		        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+		        					shipment=false;
+		        					scroll(0,0);
+		        					}
+								}
+								else {
+									document.getElementById('shipment_value_number_err').style.display="none";
+		        					document.getElementById('shipment_equal_err').style.display="none";
+		        					document.getElementById('shipment_range').style.display="none";
+		        					document.getElementById('shipment_greaterthan_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_err').style.display="none";
+		        					document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+		        					document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+		        					shipment=true;
+								}
+							}
+							
+						}
+					}
+					else if (!isNumeric(myString)){
+						document.getElementById('shipment_value_number_err').style.display="block";
+						document.getElementById('shipment_equal_err').style.display="none";
+						document.getElementById('shipment_range').style.display="none";
+						document.getElementById('shipment_greaterthan_err').style.display="none";
+						document.getElementById('shipment_lessthan_err').style.display="none";
+						document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+						document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+						shipment=false;
+						scroll(0,0);
+			
+						}
+					else{
+						document.getElementById('shipment_range').style.display="block";
+						document.getElementById('shipment_value_number_err').style.display="none";
+						document.getElementById('shipment_equal_err').style.display="none";
+						document.getElementById('shipment_greaterthan_err').style.display="none";
+						document.getElementById('shipment_lessthan_err').style.display="none";
+						document.getElementById('shipment_greaterthan_or_equal_err').style.display="none";
+						document.getElementById('shipment_lessthan_or_equal_err').style.display="none";
+						shipment=false;
+						scroll(0,0);
+					}
+				}
+					//check condition for shipment range space
+					if(shipment_value.match(/\s/g)){
+						
+						shipment_value=shipment_value.replace(/\s/g,'');
+						document.getElementById('space_no_allow').style.display="block";
+						spacecheck=false;
+						scroll(0,0);
+					}
+					else{
+						
+						 document.getElementById('space_no_allow').style.display="none";
+						 spacecheck=true;
+					}		
+				//END VALIDATION
+		
+				if ((shipmentval==true)&& (shipment==true)&& (spacecheck==true))
+				{
+
+					var manifestSectionString = fnFormMnfSectionString(document.forms[0]);
+					var mawb_no = "";
+				    mawb_no = document.forms[0].mawb_no.value;
+				    mawb_no = trimStringValue(mawb_no);
+					//    if( mawb_no != "")
+					//    {
+					   			  	var url = "./MSQuery.do";
+					   			  	document.forms[0].action=url+"?method=queryTDOC"+
+					   	             "&DATE_TIME="+date+"&MANIFEST_SECTION_NUMBER="+
+					    		            manifestSectionString;
+					//    }
+					//    else
+					//    {
+					//   			  	var url = "./MSQuery.do";
+					//    			  document.forms[0].action=url+"?method=queryHUMA"+
+					//         	       "&DATE_TIME="+date+"&MANIFEST_SECTION_NUMBER="+
+					//          	      manifestSectionString;
+					//    }
+					  
+					  var isValidSVAValue=true;
+					  var isValidCountryValue=true;
+					  var isValidFACValue=true;
+					  var message1="";
+					  var message2="";
+					  var message3="";
+
+					  if(document.forms[0].dest_cntry_rest.value!=''){
+						    isValidCountryValue = isValidCountry(document.forms[0].dest_cntry_rest.value,2);
+							if(!isValidCountryValue) {
+								message1="Destination Country must be 2 chars.";
+								message1=message1+"\n";
+								}
+						}
+					  if(document.forms[0].dest_ctryloc.value!=''){
+							isValidSVAValue = isValidSVA(document.forms[0].dest_ctryloc.value,3);
+							if (!isValidSVAValue){
+								message2="Destination Service Area must be 3 chars.";
+								message2=message2+"\n";
+							}
+					  }
+					  if(document.forms[0].shi_dest_loc_cd.value!=''){
+							isValidFACValue = isValidFAC(document.forms[0].shi_dest_loc_cd.value,3);
+							if (!isValidFACValue){
+								message3="Destination Facility Code must be less than or equal 3 chars.";
+								message3=message3+"\n";
+							}
+					  }
+					  
+					  
+					  if( isValidCountryValue && isValidSVAValue && isValidFACValue ){
+							document.forms[0].submit();
+					  }else {
+						  message3="Please check Shipment Filter Criter section:\n"+ "" +message1 + "" + message2 + "" + message3 ;
+						  alert(message3);
+					  }
+					}
+} //end submitForm()
+function isValidCountry(str,s){
+   return isValidValue(str,s);
+}
+
+function isValidSVA(str,s){
+   return isValidValue(str,s);
+}
+function isValidFAC(str, s){
+   return isValidValue(str, s);
+}
+
+function isValidValue(str,s)
+{  
+    //alert(str);
+    mystring = str;
+	isValid = true
+    if (mystring.match(/^([0-9a-zA-z\, ],*)+$/ ) ) {    //Allowed 0-9, a-z, A-Z, comma and space
+		var list = mystring.split(',');
+		for (var i=0; i<list.length; ++i) {
+		  //alert(list[i]);
+		  if (trimStringValue(list[i]).length > s ) {
+			isValid = false
+			break;
+		  }
+		}
+		
+	}
+    else
+    {   //alert("else");
+		isValid = false;
+    }
+	
+	return isValid;
+}
+
+function fnFormMnfSectionString(form)
+{
+			  var manifestSectionString="";
+			  var sINTERNATIONAL="1";
+					var sTRANS="2";
+   		var sDOMESTIC="3";
+   		
+			  if ( form.intl.checked)
+			  {
+				 manifestSectionString = sINTERNATIONAL+",";
+			   }
+			   if ( form.trans.checked)
+			  {
+				 manifestSectionString = manifestSectionString + sTRANS+",";
+			   }
+			   if ( form.domestic.checked)
+			  {
+				 manifestSectionString = manifestSectionString + sDOMESTIC+",";
+			   }
+
+			  return manifestSectionString.substring(0,manifestSectionString.length-1 );
+}
+
+function displayPopupCode( )
+{
+    URL='./CodeList.do'
+    //winAttributes = 'width=380,height=250,scrollbars=yes,screenX=450,screenY=350'
+    winAttributes = 'width=600,height=400,scrollbars=no,screenX=500,screenY=350'; // added for MS2.6.4 09MAY2016 Law
+    childWindow = window.open( URL ,'Code_List', winAttributes );
+    childWindow.focus( );
+    window.onBlur = fnBlockEvents();
+}
+
+// added for MS2.6.4 21APR 2016 Law
+function displayPopupServiceCode( )
+{
+    URL = './ServiceCodeList.do'
+    winAttributes = 'width=700,height=400,scrollbars=no,screenX=500,screenY=350';
+    childWindow = window.open(URL, 'Service_Code_List', winAttributes);
+    childWindow.focus();
+    window.onBlur = fnBlockEvents();
+}
+
+function displayPopupCtry(fieldName)
+{
+       
+//	alert (fieldName );
+    URL='./CountryList.do'+ '?fieldName='+fieldName
+    winAttributes = 'width=580,height=450,scrollbars=no,screenX=0,screenY=0';
+    childWindow = window.open( URL ,'Country_List', winAttributes );
+    childWindow.focus( );
+    window.onBlur = fnBlockEvents();
+}
+
+
+
+
+function fnUpdateCountryRest(fieldname, str) {
+	
+	if(str.length>0){
+		var inputCountry = 'document.forms[0].'+fieldname+'.value="'+str+'"'
+	    eval(inputCountry);
+	}
+	var focusField = 'document.forms[0].'+fieldname+'.focus()'
+	eval(focusField);
+	
+}
+
+function displayPopupSva(textField)
+{
+    //alert(textField);
+    URL='./SVAList.do'+'?filedName='+textField 
+    //txtField=textField;
+	winAttributes = 'width=420,height=350,scrollbars=no,screenX=500,screenY=200';
+    childWindow = window.open( URL ,'SVA_List', winAttributes );
+    childWindow.focus( );
+    window.onBlur = fnBlockEvents();
+
+}
+
+
+
+function shipmentExample()
+{
+   
+    childWindow = window.open( "./Example.do" , null, 'width=420,height=350,scrollbars=no,screenX=500,screenY=200' );
+    childWindow.focus( );
+    window.onBlur = fnBlockEvents();
+
+}
+function fnUpdateTextField(orgTxtFldName, sva) {
+    if (orgTxtFldName == 'org_loc') {
+	    if (sva != '')
+        {
+    	    document.forms[0].org_loc.value=sva;
+    	}
+		document.forms[0].org_loc.focus();
+    } else if (orgTxtFldName == 'dest_loc') {
+	    if (sva != '')
+        {
+    	    document.forms[0].dest_loc.value=sva;
+    	}
+    	document.forms[0].dest_loc.focus();
+    } else if (orgTxtFldName == 'dest_ctryloc') {
+    	if(sva.length>0){
+    		var inputSva = 'document.forms[0].'+orgTxtFldName+'.value="'+sva+'"'
+    		eval(inputSva);
+    		make_enable('shi_dest_loc_cd');
+    	}
+    	var focusField = 'document.forms[0].'+orgTxtFldName+'.focus()'
+    	eval(focusField);
+    } else if (orgTxtFldName == 'shi_dest_loc_cd') {
+    	if(sva.length>0){
+    		var inputSva = 'document.forms[0].'+orgTxtFldName+'.value="'+sva+'"'
+    		eval(inputSva);
+    	}
+    	var focusField = 'document.forms[0].'+orgTxtFldName+'.focus()'
+    	eval(focusField);
+    }
+}
+
+//added for Ms2.6.4 04MAY2016 Law
+function addEntries(str) {
+    var entries = str.replace(new RegExp("\\s*,\\s*", 'g'), ",").split(",");
+    var table = {};
+    var result = "";
+
+    for (var i=0; i<entries.length; i++) {
+		var entry = entries[i];
+		
+		 if ((entry.length > 0) && (table[entry] == null)) {
+			table[entry] = entry;
+			
+			if (result.length > 0) {
+				result += ", ";
+			}
+			
+			result += entry;
+		}
+    }
+
+    return result;
+}
+
+//modified MS2.6.4 09MAY2016 Law
+function fnUpdateProdCode(str) {
+	document.forms[0].glob_prod_code.value = addEntries(document.forms[0].glob_prod_code.value + ", " + str); 
+   	document.forms[0].glob_prod_code.focus();
+}
+
+//added for Ms2.6.4 04MAY2016 Law
+function fnUpdateServiceCode(str) {    
+    document.forms[0].service_code.value = addEntries(document.forms[0].service_code.value + ", " + str); 
+   	document.forms[0].service_code.focus();
+}
+
+
+	function fnSessionTimeout(){
+//    	alert("In session time out");
+    	document.forms[0].action="./SessionTimeOut.do";
+    	document.forms[0].submit();
+    	}
+    	
+    	function fnHelp()
+    	{
+    	URL="./jsps/help.jsp"
+
+winAttributes = 'width=580,height=450,scrollbars=no,screenX=0,screenY=0';
+
+    tmpWindow = window.open( URL ,'Help', winAttributes );
+
+    tmpWindow.focus( );
+
+    	
+    	}
+    	
+    	function getUsersCurrentDate( )
+{
+ 
+}
+
+function fnGetBrDate(dateFormat)
+{
+
+                      var deptDate = fnBrowserDate('0', dateFormat);
+                        if (deptDate == "NaN/NaN/NaN")
+                        document.forms[0].dept_date.value = "";
+                        else
+                        document.forms[0].dept_date.value = deptDate;
+         
+
+}
+
+
+function displayPopupLoc(textField)
+{
+
+		var dest_ctry_loc=document.getElementById("dest_ctryloc").value;
+	  if(trimStringValue(dest_ctry_loc) != "") {
+		  var countryCode = document.getElementById("dest_cntry_rest").value;
+		  var serviceAreaCode = document.getElementById("dest_ctryloc").value;
+		
+	    //alert(textField);
+	    //alert (countryCode);
+	    //alert (serviceAreaCode);
+	    URL='./LOCList.do'+'?filedName='+textField 
+	    URL=URL+'&countryCode='+countryCode
+	    URL=URL+'&serviceAreaCode='+serviceAreaCode
+	    //alert (URL);
+		  winAttributes = 'width=420,height=350,scrollbars=no,screenX=500,screenY=200';
+	    childWindow = window.open( URL ,'Loc_List', winAttributes );
+	    childWindow.focus( );
+	    window.onBlur = fnBlockEvents();
+	  }
+
+}
+
+function make_enable(which)
+{
+
+	if(which=="shi_dest_loc_cd") {
+	  var dest_ctry_loc=document.getElementById("dest_ctryloc").value;
+	  if(trimStringValue(dest_ctry_loc) != "") {
+			document.forms[0].shi_dest_loc_cd.disabled=false;
+	  }else {
+			document.forms[0].shi_dest_loc_cd.disabled=true;
+			document.getElementById("shi_dest_loc_cd").value="";
+	  }
+	}
+}
+
+//Disable Version radio 2.0 & 2.3, auto select 2.4 if Jasper template selected
+function fnDisableRadioButtons()
+{
+	var selected = document.getElementById("report_tmplt").value;
+	if (selected.substring(0,3) == "JS_") 
+	{
+		document.forms[0].pid_version[2].checked = true;
+		document.forms[0].pid_version[0].disabled = true;
+		document.forms[0].pid_version[1].disabled = true;
+	}
+	else
+	{
+		document.forms[0].pid_version[0].disabled = false;
+		document.forms[0].pid_version[1].disabled = false;
+		document.forms[0].pid_version[0].checked = true;
+	}
+}
+    	
+//--> 
+</SCRIPT>
+<body onload="fnGetBrDate('dd/MM/yyyy');fnDisableSubmitOnEnter();setFocus();make_enable('shi_dest_loc_cd');">
+
+    <!-- Properties of the page-->
+    <form name="queryForm" method="POST" action="/MSQuery.do">	
+	<table border="0" cellspacing="0" cellpadding="0" width="100%">
+			 
+
+			
+			 
+			 
+			 
+			 
+			 
+			 
+
+			      
+			 			 
+			      
+
+			 <!-- added for MS2.6.4 21APR2016 Law -->
+			      
+
+			 
+			 
+			 
+			 
+			     
+			 
+			      
+			 
+			      
+</table>
+<Font color="#CC0000">
+<ul>
+<!-- ERROR MESSAGES -->
+<!-- Shipment declare value  -->
+
+<li id="shipment_value_number_err" class="errormsg" style="display:none; list-style:outside;"><b>Only numbers and operators '>,<,>=,<=,=' are allowed for shipment declare value.Please Refer to the Example</b>
+<li id="space_no_allow" class="errormsg" style="display:none; list-style:outside;"><b>No space allow for shipment declare value</b>
+<li id="shipment_greaterthan_or_equal_err" class="errormsg" style="display:none; list-style:outside;"><b>Shipment declare value should be greater than or equal</b>
+<li id="shipment_lessthan_or_equal_err" class="errormsg" style="display:none; list-style:outside;"><b>Shipment declare value should be less than or equal</b>
+<li id="shipment_greaterthan_err" class="errormsg" style="display:none; list-style:outside;"><b>Shipment declare value should be greater than</b>
+<li id="shipment_lessthan_err" class="errormsg" style="display:none; list-style:outside;"><b>Shipment declare value should be less than</b>
+<li id="shipment_equal_err" class="errormsg" style="display:none; list-style:outside;"><b>Shipment declare value should be equal</b>
+<li id="shipment_range" class="errormsg" style="display:none; list-style:outside;"><b>Please enter shipment declare value with range and only operators '>,<,>=,<=,=' are allowed.Please Refer to the Example</b>
+<li id="select_either_err" class="errormsg" style="display:none; list-style:outside;"><b>Please enter shipment declare value and no shipment value filter</b></li>
+
+</ul>
+</Font> 
+    <table border="0" width="100%" align="center" bgColor="#ffffff" cellspacing="0" cellpadding="0">
+             
+    
+    <tr>
+    <td>&nbsp;</td>
+    <td colspan="2">
+    
+    
+    
+    
+    <!-- added by Dilip for struts validation end-->
+    
+    
+    
+    
+      <table border="0" align="center" width="100%" cellspacing="0" cellpadding="0">
+       <tr><td class="whiteBg" height=20>&nbsp;</td></tr>
+ 
+	    <tr>
+        	<td class="whiteBg" colspan="3">&nbsp;</td>
+	        <!-- td width="205"></td>
+	        <td width="605"></td -->
+    	</tr>
+    
+    	<tr>
+	        <td class="whiteBg" colspan="3"><img src="images/blank.gif" height="21" width="1"></td>
+	    </tr>
+      <tr>
+          <td width="5" class="textFormHead" >&nbsp;</td>
+          <td class="textFormHead" height="14" width="205px">Query for Movement Manifest</td>
+          <td class="whiteBG">&nbsp;</td>
+      </tr>
+      </table></td>
+    <td width="28">&nbsp;</td>
+    </tr>
+
+    <tr>
+    <td width="28">&nbsp;</td>
+    <td colspan="2"> 
+
+      <table border="0" align="center" bgColor="#e4e4e4" width="100%" cellspacing="0" cellpadding="0">
+      <tr class="formElementCaption">
+          <td width="5"></td>
+          <td width="22" class="formElementAsterisk"></td>
+          <td width="228">Movement Number</td>
+           <td width="678">
+           <input type="text" name="mvmt_no" maxlength="35" size="30" value="" onblur="javascript:this.value=this.value.toUpperCase();">
+          </td>
+      </tr>
+      <tr>
+          <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+      </tr>
+      <tr class="formElementCaption">
+          <td width="5"></td>
+          <td class="formElementAsterisk">*&nbsp;</td>
+          <td><strong>Movement Departure Date</strong></td>
+           <td>  
+
+							<input type="text" name="dept_date" maxlength="10" size="8" value=""> 
+           &nbsp; <a href="#" onClick="Calendar(document.forms[0].dept_date,530,160, 'dd/MM/yyyy')" title="Click here to view the calendar."><img src="images/calendar.gif" border="0"></a>   &nbsp;&nbsp;(dd/mm/yyyy) </td>
+      </tr>
+      <tr>
+          <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+      </tr>
+      <tr class="formElementCaption">
+          <td width="5"></td>
+          <td class="formElementAsterisk"></td>
+          <td>Movement Origin </td>
+          <td>
+          <input type="text" name="org_loc" maxlength="3" size="6" value="" onblur="javascript:this.value=this.value.toUpperCase();"> 
+          &nbsp;<a href="javascript:displayPopupSva('org_loc')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Service area</a> </td>
+      </tr>
+      <tr>
+          <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+      </tr>
+      <tr class="formElementCaption">
+          <td width="5"></td>
+          <td></td>
+          <td> Movement Destination </td>
+          <td>
+
+          <input type="text" name="dest_loc" maxlength="3" size="6" value="" onblur="javascript:this.value=this.value.toUpperCase();"> 
+&nbsp;<a href="javascript:displayPopupSva('dest_loc')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Service area</a> </td>
+      </tr>
+      <tr>
+          <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+      </tr>
+      <tr class="formElementCaption">
+          <td width="5"></td>
+          <td></td>
+          <td></td>
+          <td></td>
+      </tr>
+      <tr>
+          <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+      </tr>
+      <tr class="formElementCaption">
+          <td width="5"></td>
+          <td></td>
+          <td> Tdoc (MAWB) </td>
+          <td>
+
+          <input type="text" name="mawb_no" size="60" value=""> 
+          </td>
+      </tr>
+      <tr>
+          <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+      </tr>
+      </table></td>
+    <td width="28"></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="2">
+        <table border="0" align="center" width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="5" class="textFormHead" >&nbsp;</td>
+            <td class="textFormHead" height="14" width="205px">Shipment Filter Criteria</td>
+            <td class="whiteBG">&nbsp;</td>
+          </tr>
+        </table></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="2">
+        <table border="0" align="center" bgColor="#e4e4e4" width="100%" cellspacing="0" cellpadding="0">
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td width="22" class="formElementAsterisk"></td>
+            <td width="220">Origin Country </td>
+            <td width="686">
+
+	 		<input type="text" name="orig_cntry_rest" maxlength="720" size="18" value="" onblur="javascript:this.value=this.value.toUpperCase();"> 
+              <a href="javascript:displayPopupCtry('orig_cntry_rest')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Country </a></td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          <!-- MS 3.0.8 Exclude shipment origin country  -->
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td width="22" class="formElementAsterisk"></td>
+            <td width="220">Exclude Origin Country </td>
+            <td width="686">
+	 		<input type="text" name="exclude_orig_ctry_rest" maxlength="720" size="18" value="" onblur="javascript:this.value=this.value.toUpperCase();this.value=this.value.split(' ').join('');"> 
+              <a href="javascript:displayPopupCtry('exclude_orig_ctry_rest')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Country </a>
+            </td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          
+          <!--  @MS2.3 11Feb2011 Begin Adding -->
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td width="22" class="formElementAsterisk"></td>
+            <td width="220">Destination Country </td>
+            <td width="686">
+
+	 		<input type="text" name="dest_cntry_rest" maxlength="720" size="18" value="" onblur="javascript:this.value=this.value.toUpperCase();"> 
+              <a href="javascript:displayPopupCtry('dest_cntry_rest')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Country </a>
+               <!-- MS2.2 4.0 Sugashini Start -->
+			<input type="text" name="dest_ctryloc" maxlength="4000" size="18" value="" onblur="javascript:this.value=this.value.toUpperCase();make_enable('shi_dest_loc_cd')"> 
+				&nbsp;<a href="javascript:displayPopupSva('dest_ctryloc')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> SVA</a>
+ 			<!-- MS2.2 4.0 Sugashini End -->&nbsp;&nbsp;&nbsp;&nbsp;
+ 			<input type="text" name="shi_dest_loc_cd" maxlength="4000" size="18" value="" onblur="javascript:this.value=this.value.toUpperCase();" disabled="disabled"> 
+              <a href="javascript:displayPopupLoc('shi_dest_loc_cd')"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> FAC</a>
+              
+              </td>
+              
+              <td>
+                			
+              </td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          <!--  @MS2.3 11Feb2011 End Adding -->
+          
+          <tr class="formElementCaption">
+            <td width="5"></td>	
+            <td class="formElementAsterisk">&nbsp;</td>
+            <td>Global Product Codes </td>
+            <td>
+
+			<input type="text" name="glob_prod_code" maxlength="100" size="18" value="D,X" onblur="javascript:this.value=this.value.toUpperCase();"> 
+                <a href="javascript:displayPopupCode( )"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Code List </a> </td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          
+          <!-- added for MS2.6.4 21APR2016 Law -->
+          <tr class="formElementCaption">
+            <td width="5"></td>	
+            <td class="formElementAsterisk">&nbsp;</td>
+            <td>Service Codes </td>            
+            <td>
+				<input type="text" name="service_code" maxlength="100" size="18" value="" onblur="javascript:this.value=this.value.toUpperCase();"> 
+                <a href="javascript:displayPopupServiceCode( )"><img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> Code List </a> 
+            </td>
+          </tr>
+          <tr>
+          	<td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+                    
+           <!--Start: Added by sugashini Apr 16th 2012 -->
+          <tr class="formElementCaption">
+               <td width="5"></td>
+               <td class="formElementAsterisk">&nbsp;</td>
+               <td width="228">Shipment Declared Value </td>
+               <td><input type="text" name="shipmentcurrency" maxlength="100" size="18" value=""> <img src="images/arrow_r_r_small.gif" width="9" height="9" border="0"> <a href="javascript:shipmentExample()">Example</a>
+           	   
+				<select name="localcurrency"><option value="0">No Currency Filter</option>
+				<option value="AED">AED</option>
+<option value="AFN">AFN</option>
+<option value="ALL">ALL</option>
+<option value="AMD">AMD</option>
+<option value="ANG">ANG</option>
+<option value="AOA">AOA</option>
+<option value="ARS">ARS</option>
+<option value="AUD">AUD</option>
+<option value="AWG">AWG</option>
+<option value="AZN">AZN</option>
+<option value="BAM">BAM</option>
+<option value="BBD">BBD</option>
+<option value="BDT">BDT</option>
+<option value="BGN">BGN</option>
+<option value="BHD">BHD</option>
+<option value="BIF">BIF</option>
+<option value="BMD">BMD</option>
+<option value="BND">BND</option>
+<option value="BOB">BOB</option>
+<option value="BRL">BRL</option>
+<option value="BSD">BSD</option>
+<option value="BTN">BTN</option>
+<option value="BWP">BWP</option>
+<option value="BYN">BYN</option>
+<option value="BZD">BZD</option>
+<option value="CAD">CAD</option>
+<option value="CDF">CDF</option>
+<option value="CHF">CHF</option>
+<option value="CLP">CLP</option>
+<option value="CNY">CNY</option>
+<option value="COP">COP</option>
+<option value="CRC">CRC</option>
+<option value="CUC">CUC</option>
+<option value="CUP">CUP</option>
+<option value="CVE">CVE</option>
+<option value="CZK">CZK</option>
+<option value="DJF">DJF</option>
+<option value="DKK">DKK</option>
+<option value="DOP">DOP</option>
+<option value="DZD">DZD</option>
+<option value="EGP">EGP</option>
+<option value="ERN">ERN</option>
+<option value="ETB">ETB</option>
+<option value="EUR">EUR</option>
+<option value="FJD">FJD</option>
+<option value="FKP">FKP</option>
+<option value="GBP">GBP</option>
+<option value="GEL">GEL</option>
+<option value="GHS">GHS</option>
+<option value="GIP">GIP</option>
+<option value="GMD">GMD</option>
+<option value="GNF">GNF</option>
+<option value="GTQ">GTQ</option>
+<option value="GYD">GYD</option>
+<option value="HKD">HKD</option>
+<option value="HNL">HNL</option>
+<option value="HRK">HRK</option>
+<option value="HTG">HTG</option>
+<option value="HUF">HUF</option>
+<option value="IDR">IDR</option>
+<option value="ILS">ILS</option>
+<option value="INR">INR</option>
+<option value="IQD">IQD</option>
+<option value="IRR">IRR</option>
+<option value="ISK">ISK</option>
+<option value="JMD">JMD</option>
+<option value="JOD">JOD</option>
+<option value="JPY">JPY</option>
+<option value="KES">KES</option>
+<option value="KGS">KGS</option>
+<option value="KHR">KHR</option>
+<option value="KMF">KMF</option>
+<option value="KPW">KPW</option>
+<option value="KRW">KRW</option>
+<option value="KWD">KWD</option>
+<option value="KYD">KYD</option>
+<option value="KZT">KZT</option>
+<option value="LAK">LAK</option>
+<option value="LBP">LBP</option>
+<option value="LKR">LKR</option>
+<option value="LRD">LRD</option>
+<option value="LSL">LSL</option>
+<option value="LYD">LYD</option>
+<option value="MAD">MAD</option>
+<option value="MDL">MDL</option>
+<option value="MGA">MGA</option>
+<option value="MKD">MKD</option>
+<option value="MMK">MMK</option>
+<option value="MNT">MNT</option>
+<option value="MOP">MOP</option>
+<option value="MRU">MRU</option>
+<option value="MUR">MUR</option>
+<option value="MVR">MVR</option>
+<option value="MWK">MWK</option>
+<option value="MXN">MXN</option>
+<option value="MYR">MYR</option>
+<option value="MZN">MZN</option>
+<option value="NAD">NAD</option>
+<option value="NGN">NGN</option>
+<option value="NIO">NIO</option>
+<option value="NOK">NOK</option>
+<option value="NPR">NPR</option>
+<option value="NZD">NZD</option>
+<option value="OMR">OMR</option>
+<option value="PAB">PAB</option>
+<option value="PEN">PEN</option>
+<option value="PGK">PGK</option>
+<option value="PHP">PHP</option>
+<option value="PKR">PKR</option>
+<option value="PLN">PLN</option>
+<option value="PYG">PYG</option>
+<option value="QAR">QAR</option>
+<option value="RON">RON</option>
+<option value="RSD">RSD</option>
+<option value="RUB">RUB</option>
+<option value="RWF">RWF</option>
+<option value="SAR">SAR</option>
+<option value="SBD">SBD</option>
+<option value="SCR">SCR</option>
+<option value="SDG">SDG</option>
+<option value="SEK">SEK</option>
+<option value="SGD">SGD</option>
+<option value="SHP">SHP</option>
+<option value="SLL">SLL</option>
+<option value="SOS">SOS</option>
+<option value="SRD">SRD</option>
+<option value="SSP">SSP</option>
+<option value="STN">STN</option>
+<option value="SYP">SYP</option>
+<option value="SZL">SZL</option>
+<option value="THB">THB</option>
+<option value="TJS">TJS</option>
+<option value="TMT">TMT</option>
+<option value="TND">TND</option>
+<option value="TOP">TOP</option>
+<option value="TRY">TRY</option>
+<option value="TTD">TTD</option>
+<option value="TWD">TWD</option>
+<option value="TZS">TZS</option>
+<option value="UAH">UAH</option>
+<option value="UGX">UGX</option>
+<option value="USD">USD</option>
+<option value="UYU">UYU</option>
+<option value="UZS">UZS</option>
+<option value="VES">VES</option>
+<option value="VND">VND</option>
+<option value="VUV">VUV</option>
+<option value="WST">WST</option>
+<option value="XAF">XAF</option>
+<option value="XCD">XCD</option>
+<option value="XDR">XDR</option>
+<option value="XOF">XOF</option>
+<option value="XPF">XPF</option>
+<option value="YER">YER</option>
+<option value="ZAR">ZAR</option>
+<option value="ZMW">ZMW</option>
+<option value="ZWL">ZWL</option></select>             	
+			   </td>
+           </tr>
+           <tr>
+               <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+           </tr>
+          <!--End: Added by sugashini Apr 16th 2012  -->
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td class="formElementAsterisk"></td>
+            <td>Merge Split Shipments</td>
+            <td>
+
+            <input type="radio" name="merg_splt_shpts" value="Y" checked="checked">
+          YES &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="radio" name="merg_splt_shpts" value="N">
+          NO</td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+        </table></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="2">
+        <table border="0" align="center" width="100%" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="5" class="textFormHead" >&nbsp;</td>
+            <td class="textFormHead" height="14" width="205px">Report Format Settings</td>
+            <td class="whiteBG">&nbsp;</td> 
+          </tr>
+        </table></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td colspan="2">
+        <table border="0" align="center" bgColor="#e4e4e4" width="100%" cellspacing="0" cellpadding="0">
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td width="22" class="formElementAsterisk"></td>
+            <td width="228">Unit of Weight </td>
+            <td width="686">
+
+              	<input type="radio" name="weight_unit" value="kg" checked="checked">
+              	KG&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+				<input type="radio" name="weight_unit" value="lb">
+				LB
+			</td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+                    
+              <tr class="formElementCaption">
+              <td></td>
+            <td  class="formElementAsterisk"></td>
+            <td width="228"><strong>Extract HWB with missing details</strong></td>
+            <td width="686">
+
+              	<input type="radio" name="printawb_missingdetails" value="Y" checked="checked">
+              	YES &nbsp;&nbsp;&nbsp;
+
+				<input type="radio" name="printawb_missingdetails" value="N">
+				NO
+			</td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td class="formElementAsterisk"></td>
+            <td>Report Template</td>
+            <td> 
+            <select name="report_tmplt" onchange="javascript:fnDisableRadioButtons();"><option value="DOXTMPLT000" selected="selected">DOXTMPLT000 - Default Template for DOX Shipments</option>
+<option value="TDX">TDX - Time Sensitive</option>
+<option value="WPXTMPLT000">WPXTMPLT000 - Default Template for WPX Shipments</option>
+<option value="JS_XX_SHALERT_V1">JS_XX_SHALERT_V1 - JS_XX_SHALERT_V1.jrxml</option>
+<option value="JS_XX_SHALERT_V4">JS_XX_SHALERT_V4 - html</option>
+<option value="JS_XX_SHALERT_V3">JS_XX_SHALERT_V3 - HTML</option></select>
+            </td>
+          </tr>
+           <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          
+          <!-- MS2.2 4.1 Michael Foo Start -->
+          <tr class="formElementCaption">
+            <td></td>
+            <td class="formElementAsterisk">*&nbsp;</td>
+            <td><strong>Version</strong></td>
+            <td>
+				<input type="radio" name="pid_version" value="2.0" checked="checked">
+              	2.0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" name="pid_version" value="2.2">
+				2.3 (PID)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				<input type="radio" name="pid_version" value="2.4">
+				2.4 (Extended PID)
+			</td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          
+          
+          <!-- MS2.2 4.1 Michael Foo End -->
+          <tr class="formElementCaption">
+            <td></td>
+            <td class="formElementAsterisk">*&nbsp;</td>
+            <td><strong>Manifest Sections</strong></td>
+            <td>
+
+            <input type="checkbox" name="intl" value="on" checked="checked">
+             International &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input type="checkbox" name="trans" value="on" checked="checked">
+              Transshipment &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+            <input type="checkbox" name="domestic" value="on" checked="checked">
+              Domestic</td>
+          </tr>
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+          
+          <tr class="formElementCaption">
+            <td width="5"></td>
+            <td  class="formElementAsterisk"></td>
+            <td>Shipment Declared Currency</td>
+            <td>
+				<select name="currency"><option value="0">No Currency Conversion</option>
+				<option value="AED">AED</option>
+<option value="AFN">AFN</option>
+<option value="ALL">ALL</option>
+<option value="AMD">AMD</option>
+<option value="ANG">ANG</option>
+<option value="AOA">AOA</option>
+<option value="ARS">ARS</option>
+<option value="AUD">AUD</option>
+<option value="AWG">AWG</option>
+<option value="AZN">AZN</option>
+<option value="BAM">BAM</option>
+<option value="BBD">BBD</option>
+<option value="BDT">BDT</option>
+<option value="BGN">BGN</option>
+<option value="BHD">BHD</option>
+<option value="BIF">BIF</option>
+<option value="BMD">BMD</option>
+<option value="BND">BND</option>
+<option value="BOB">BOB</option>
+<option value="BRL">BRL</option>
+<option value="BSD">BSD</option>
+<option value="BTN">BTN</option>
+<option value="BWP">BWP</option>
+<option value="BYN">BYN</option>
+<option value="BZD">BZD</option>
+<option value="CAD">CAD</option>
+<option value="CDF">CDF</option>
+<option value="CHF">CHF</option>
+<option value="CLP">CLP</option>
+<option value="CNY">CNY</option>
+<option value="COP">COP</option>
+<option value="CRC">CRC</option>
+<option value="CUC">CUC</option>
+<option value="CUP">CUP</option>
+<option value="CVE">CVE</option>
+<option value="CZK">CZK</option>
+<option value="DJF">DJF</option>
+<option value="DKK">DKK</option>
+<option value="DOP">DOP</option>
+<option value="DZD">DZD</option>
+<option value="EGP">EGP</option>
+<option value="ERN">ERN</option>
+<option value="ETB">ETB</option>
+<option value="EUR">EUR</option>
+<option value="FJD">FJD</option>
+<option value="FKP">FKP</option>
+<option value="GBP">GBP</option>
+<option value="GEL">GEL</option>
+<option value="GHS">GHS</option>
+<option value="GIP">GIP</option>
+<option value="GMD">GMD</option>
+<option value="GNF">GNF</option>
+<option value="GTQ">GTQ</option>
+<option value="GYD">GYD</option>
+<option value="HKD">HKD</option>
+<option value="HNL">HNL</option>
+<option value="HRK">HRK</option>
+<option value="HTG">HTG</option>
+<option value="HUF">HUF</option>
+<option value="IDR">IDR</option>
+<option value="ILS">ILS</option>
+<option value="INR">INR</option>
+<option value="IQD">IQD</option>
+<option value="IRR">IRR</option>
+<option value="ISK">ISK</option>
+<option value="JMD">JMD</option>
+<option value="JOD">JOD</option>
+<option value="JPY">JPY</option>
+<option value="KES">KES</option>
+<option value="KGS">KGS</option>
+<option value="KHR">KHR</option>
+<option value="KMF">KMF</option>
+<option value="KPW">KPW</option>
+<option value="KRW">KRW</option>
+<option value="KWD">KWD</option>
+<option value="KYD">KYD</option>
+<option value="KZT">KZT</option>
+<option value="LAK">LAK</option>
+<option value="LBP">LBP</option>
+<option value="LKR">LKR</option>
+<option value="LRD">LRD</option>
+<option value="LSL">LSL</option>
+<option value="LYD">LYD</option>
+<option value="MAD">MAD</option>
+<option value="MDL">MDL</option>
+<option value="MGA">MGA</option>
+<option value="MKD">MKD</option>
+<option value="MMK">MMK</option>
+<option value="MNT">MNT</option>
+<option value="MOP">MOP</option>
+<option value="MRU">MRU</option>
+<option value="MUR">MUR</option>
+<option value="MVR">MVR</option>
+<option value="MWK">MWK</option>
+<option value="MXN">MXN</option>
+<option value="MYR">MYR</option>
+<option value="MZN">MZN</option>
+<option value="NAD">NAD</option>
+<option value="NGN">NGN</option>
+<option value="NIO">NIO</option>
+<option value="NOK">NOK</option>
+<option value="NPR">NPR</option>
+<option value="NZD">NZD</option>
+<option value="OMR">OMR</option>
+<option value="PAB">PAB</option>
+<option value="PEN">PEN</option>
+<option value="PGK">PGK</option>
+<option value="PHP">PHP</option>
+<option value="PKR">PKR</option>
+<option value="PLN">PLN</option>
+<option value="PYG">PYG</option>
+<option value="QAR">QAR</option>
+<option value="RON">RON</option>
+<option value="RSD">RSD</option>
+<option value="RUB">RUB</option>
+<option value="RWF">RWF</option>
+<option value="SAR">SAR</option>
+<option value="SBD">SBD</option>
+<option value="SCR">SCR</option>
+<option value="SDG">SDG</option>
+<option value="SEK">SEK</option>
+<option value="SGD">SGD</option>
+<option value="SHP">SHP</option>
+<option value="SLL">SLL</option>
+<option value="SOS">SOS</option>
+<option value="SRD">SRD</option>
+<option value="SSP">SSP</option>
+<option value="STN">STN</option>
+<option value="SYP">SYP</option>
+<option value="SZL">SZL</option>
+<option value="THB">THB</option>
+<option value="TJS">TJS</option>
+<option value="TMT">TMT</option>
+<option value="TND">TND</option>
+<option value="TOP">TOP</option>
+<option value="TRY">TRY</option>
+<option value="TTD">TTD</option>
+<option value="TWD">TWD</option>
+<option value="TZS">TZS</option>
+<option value="UAH">UAH</option>
+<option value="UGX">UGX</option>
+<option value="USD">USD</option>
+<option value="UYU">UYU</option>
+<option value="UZS">UZS</option>
+<option value="VES">VES</option>
+<option value="VND">VND</option>
+<option value="VUV">VUV</option>
+<option value="WST">WST</option>
+<option value="XAF">XAF</option>
+<option value="XCD">XCD</option>
+<option value="XDR">XDR</option>
+<option value="XOF">XOF</option>
+<option value="XPF">XPF</option>
+<option value="YER">YER</option>
+<option value="ZAR">ZAR</option>
+<option value="ZMW">ZMW</option>
+<option value="ZWL">ZWL</option></select>              	
+			</td>
+          </tr>
+          
+          <tr>
+            <td class="whiteBg" colspan="9"><img src="images/blank.gif" height="1" width="1"></td>
+          </tr>
+        </table></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td></td>
+    </tr>
+    <tr>
+        <td width="28"></td>
+        <td><table  border='0'>
+          <tr>
+            <td class="buttonBigTD"><a href="javascript:fnHelp()" class="buttonBig1" title="Click here to view the help page." onmouseover="return false" onmouseout="return false"><img src="images/arrow_r_r_small.gif" border="0"><SPAN style='text-decoration:underline; font-weight: bold;'>H</SPAN><strong>elp</strong></a></td>
+          </tr>
+        </table></td>
+        <td>    <table  border='0' align="right">
+        <tr>
+            <td class="buttonBigTD">
+            <a href="javascript:fnSubmit()" class="buttonBig1" title="Movement Query" onmouseover="return false" onmouseout="return false"><img src="images/arrow_r_r_small.gif" border="0" alt = "Movement Query"><strong>O</strong><SPAN style='text-decoration:underline; font-weight: bold;'>k</SPAN></a>
+
+										  </td>
+            <td class="buttonBigTD"><a href="javascript:fnReset()" class="buttonBig1" title="Click here to reset the fields in the page." onmouseover="return false" onmouseout="return false"><img src="images/arrow_r_r_small.gif" border="0"><SPAN style='text-decoration:underline; font-weight: bold;'>R</SPAN><strong>eset</strong></a></td>
+            <td class="buttonBigTD"><a href="javascript:fnClear()" class="buttonBig1" title="Click here to clear all fields" onmouseover="return false" onmouseout="return false"><img src="images/arrow_r_r_small.gif" border="0"><strong>C</strong><SPAN style='text-decoration:underline; font-weight: bold;'>l</SPAN><strong>ear</strong></a></td>
+        </tr>
+    </table>
+        </td>
+        <td width="28"></td>
+    </tr>
+    </table>
+<input type="hidden" name="currentDate" value="">
+   <input type="hidden" name="doValidation" value="False">
+    </form>
+
+</body>
+</html>
+
+<!--MSQuery.jsp-->
